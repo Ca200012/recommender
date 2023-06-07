@@ -10,8 +10,8 @@ from data_transformation import (
 items = get_data()
 
 transformed_data = transform_data(items)
-#print(transformed_data[10])
 
+print (len(transformed_data))
 # Crearea conexiunii la baza de date
 def create_conn():
     conn = mysql.connector.connect(

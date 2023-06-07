@@ -14,7 +14,7 @@ def get_data():
     data = []
 
     # Loop through the first 10000 files and append their data to the list
-    for file in files[:15000]:
+    for file in files[:20000]:
         data.append(read_json_file(file))
 
     return data
