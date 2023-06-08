@@ -32,12 +32,17 @@ def transform_data(data):
             continue
 
         # eliminam articolele care au alte marimi fata de cele mentionate
+        invalid_size_flag = False
         if 'styleOptions' in data_object:
             for index, option in enumerate(data_object['styleOptions']):
                 size_value = option.get('value')
                 if size_value not in ['S', 'M', 'L', 'XL', 'XXL']:
-                    continue
+                    invalid_size_flag = True
+                    break
                 new_item[f'size_{index}'] = size_value
+
+        if invalid_size_flag:
+            continue
 
         # prepare the structure
         gender = data_object['gender']
