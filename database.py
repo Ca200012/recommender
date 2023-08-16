@@ -99,6 +99,7 @@ def store_articles():
                 'season': article['season'],
                 'usage': article['usage'],
                 'pattern': article.get('pattern', "none"),
+                'default_image': article.get('defaultImageURL', '') or '',
                 'first_image': article.get('backImageURL', '') or '',
                 'second_image': article.get('backImageURL', '') or '',
                 'third_image': article.get('frontImageURL', '') or '',
