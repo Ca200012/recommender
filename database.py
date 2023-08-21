@@ -1,6 +1,7 @@
 import json
 from sqlalchemy import create_engine, Table, MetaData, select
 from sqlalchemy.orm import sessionmaker
+import random
 
 def store_structure():
     # Set up database connection
@@ -80,7 +81,7 @@ def store_articles():
             articletype_query = select(articletypes_table.c.id).where(articletypes_table.c.articletype_id == article_type_id)
             articletype_id = connection.execute(articletype_query).scalar()
 
-            price = article['price'] // 5
+            price = article['price'] // 7
 
             # Prepare data to be inserted
             article_data = {
@@ -97,18 +98,25 @@ def store_articles():
                 'brand_name': article['brandName'],
                 'colour': article['baseColour'],
                 'season': article['season'],
+                'pattern': article.get('Pattern', "none") or "none",
                 'usage': article['usage'],
-                'pattern': article.get('pattern', "none"),
                 'default_image': article.get('defaultImageURL', '') or '',
                 'first_image': article.get('backImageURL', '') or '',
-                'second_image': article.get('backImageURL', '') or '',
-                'third_image': article.get('frontImageURL', '') or '',
+                'second_image': article.get('frontImageURL', '') or '',
                 'description': article.get('description') or '',
                 'gender_id': gender_id,
                 'category_id': category_id,
                 'subcategory_id': subcategory_id,
                 'articletype_id': articletype_id
             }
+
+            for i in range(5):
+                key_name = f"size_{i}_availability"
+                size = f"size_{i}"
+                if article_data[size] == "none":
+                    article_data[key_name] = 0
+                else:    
+                    article_data[key_name] = random.randint(0,20)
 
             # Insert data
             connection.execute(articles_table.insert(), article_data)
