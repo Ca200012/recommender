@@ -83,14 +83,18 @@ def store_articles():
 
             price = article['price'] // 7
 
+            # Map standard sizes to their keys
+            size_mapping = {
+                'S': 'size_S',
+                'M': 'size_M',
+                'L': 'size_L',
+                'XL': 'size_XL',
+                'XXL': 'size_XXL'
+            }
+
             # Prepare data to be inserted
             article_data = {
                 'article_id': article['id'],
-                'size_0': article.get('size_0', "none"),
-                'size_1': article.get('size_1', "none"),
-                'size_2': article.get('size_2', "none"),
-                'size_3': article.get('size_3', "none"),
-                'size_4': article.get('size_4', "none"),
                 'price': price,
                 'discounted_price': article['discountedPrice'],
                 'article_number': article['articleNumber'],
@@ -110,13 +114,22 @@ def store_articles():
                 'articletype_id': articletype_id
             }
 
-            for i in range(5):
-                key_name = f"size_{i}_availability"
-                size = f"size_{i}"
-                if article_data[size] == "none":
-                    article_data[key_name] = 0
-                else:    
-                    article_data[key_name] = random.randint(0,20)
+            # Extracting the sizes from the article and structuring them as per new requirements
+            for standard_size, key_name in size_mapping.items():
+                article_data[key_name] = article.get(key_name, "none")
+                if standard_size in [article.get(f'size_{i}') for i in range(5)]:
+                    article_data[key_name] = standard_size
+                else:
+                    article_data[key_name] = "none"
+
+
+            # Now, populating the availability fields for each size
+            for standard_size, key_name in size_mapping.items():
+                size_availability_key = f"{key_name}_availability"
+                if article_data[key_name] == "none":
+                    article_data[size_availability_key] = 0
+                else:
+                    article_data[size_availability_key] = random.randint(0,20)
 
             # Insert data
             connection.execute(articles_table.insert(), article_data)
