@@ -68,17 +68,26 @@ def store_articles():
 
             # Fetch the category_id from 'categories' table
             master_category_id = article['masterCategoryId']
-            category_query = select(categories_table.c.id).where(categories_table.c.category_id == master_category_id)
+            category_query = select(categories_table.c.id).where(
+                (categories_table.c.category_id == master_category_id) &
+                (categories_table.c.gender_id == gender_id)
+            )
             category_id = connection.execute(category_query).scalar()
 
             # Fetch the subcategory_id from 'subcategories' table
             sub_category_id = article['subCategoryId']
-            subcategory_query = select(subcategories_table.c.id).where(subcategories_table.c.subcategory_id == sub_category_id)
+            subcategory_query = select(subcategories_table.c.id).where(
+                (subcategories_table.c.subcategory_id == sub_category_id) &
+                (subcategories_table.c.category_id == category_id)
+            )
             subcategory_id = connection.execute(subcategory_query).scalar()
 
             # Fetch the articletype_id from 'articletypes' table
             article_type_id = article['articleTypeId']
-            articletype_query = select(articletypes_table.c.id).where(articletypes_table.c.articletype_id == article_type_id)
+            articletype_query = select(articletypes_table.c.id).where(
+                (articletypes_table.c.articletype_id == article_type_id) &
+                (articletypes_table.c.subcategory_id == subcategory_id)
+            )
             articletype_id = connection.execute(articletype_query).scalar()
 
             price = article['price'] // 7
