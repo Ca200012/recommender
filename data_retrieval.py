@@ -7,13 +7,10 @@ def read_json_file(filename):
     return data
 
 def get_data():
-    # Use a glob pattern to get all json files
     files = glob.glob('resources/original/styles/*.json')
 
-    # Initialize an empty list to store the dictionaries
     data = []
 
-    # Loop through the first 10000 files and append their data to the list
     for file in files:
         data.append(read_json_file(file))
 

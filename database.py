@@ -4,22 +4,18 @@ from sqlalchemy.orm import sessionmaker
 import random
 
 def store_structure():
-    # Set up database connection
     engine = create_engine('mysql+pymysql://root:@localhost/licenta-back')
     connection = engine.connect()
     meta = MetaData()
 
-    # Load tables
     genders_table = Table('genders', meta, autoload_with=engine)
     categories_table = Table('categories', meta, autoload_with=engine)
     subcategories_table = Table('subcategories', meta, autoload_with=engine)
     articletypes_table = Table('articletypes', meta, autoload_with=engine)
 
-    # Read structure from file
     with open('./resources/clean/structure.json', 'r') as f:
         structure = json.load(f)
 
-    # Insert data from structure
     for gender_dict in structure['gender']:
         gender_name = list(gender_dict.keys())[0]
         gender_data = {'name': gender_name}
@@ -42,31 +38,24 @@ def store_structure():
     connection.commit()
 
 def store_articles():
-    # Set up database connection
     engine = create_engine('mysql+pymysql://root:@localhost/licenta-back')
     meta = MetaData()
 
-    # Load tables
     articles_table = Table('articles', meta, autoload_with=engine)
     genders_table = Table('genders', meta, autoload_with=engine)
     categories_table = Table('categories', meta, autoload_with=engine)
     subcategories_table = Table('subcategories', meta, autoload_with=engine)
     articletypes_table = Table('articletypes', meta, autoload_with=engine)
 
-    # Read structure from file
     with open('./resources/clean/articles.json', 'r') as f:
         articles = json.load(f)
     
-    # Create a connection and initiate a transaction
     with engine.begin() as connection:
-        # Insert each article into the 'articles' table
         for article in articles:
-            # Fetch the gender_id from 'genders' table
             gender_name = article['gender']
             gender_query = select(genders_table.c.gender_id).where(genders_table.c.name == gender_name)
             gender_id = connection.execute(gender_query).scalar()
 
-            # Fetch the category_id from 'categories' table
             master_category_id = article['masterCategoryId']
             category_query = select(categories_table.c.id).where(
                 (categories_table.c.category_id == master_category_id) &
@@ -74,7 +63,6 @@ def store_articles():
             )
             category_id = connection.execute(category_query).scalar()
 
-            # Fetch the subcategory_id from 'subcategories' table
             sub_category_id = article['subCategoryId']
             subcategory_query = select(subcategories_table.c.id).where(
                 (subcategories_table.c.subcategory_id == sub_category_id) &
@@ -82,7 +70,6 @@ def store_articles():
             )
             subcategory_id = connection.execute(subcategory_query).scalar()
 
-            # Fetch the articletype_id from 'articletypes' table
             article_type_id = article['articleTypeId']
             articletype_query = select(articletypes_table.c.id).where(
                 (articletypes_table.c.articletype_id == article_type_id) &
@@ -92,7 +79,6 @@ def store_articles():
 
             price = article['price'] // 7
 
-            # Map standard sizes to their keys
             size_mapping = {
                 'S': 'size_S',
                 'M': 'size_M',
@@ -101,7 +87,6 @@ def store_articles():
                 'XXL': 'size_XXL'
             }
 
-            # Prepare data to be inserted
             article_data = {
                 'article_id': article['id'],
                 'price': price,
@@ -123,7 +108,6 @@ def store_articles():
                 'articletype_id': articletype_id
             }
 
-            # Extracting the sizes from the article and structuring them as per new requirements
             for standard_size, key_name in size_mapping.items():
                 article_data[key_name] = article.get(key_name, "none")
                 if standard_size in [article.get(f'size_{i}') for i in range(5)]:
@@ -132,7 +116,6 @@ def store_articles():
                     article_data[key_name] = "none"
 
 
-            # Now, populating the availability fields for each size
             for standard_size, key_name in size_mapping.items():
                 size_availability_key = f"{key_name}_availability"
                 if article_data[key_name] == "none":
@@ -140,7 +123,4 @@ def store_articles():
                 else:
                     article_data[size_availability_key] = random.randint(0,20)
 
-            # Insert data
             connection.execute(articles_table.insert(), article_data)
-
-
